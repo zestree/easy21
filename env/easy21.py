@@ -1,9 +1,10 @@
 import random
-from collections import namedtuple
 import numpy as np
+import copy
+from actions import Action
 
 class Easy21Env:
-    actionSpaces = 2
+    action_spaces = 2
 
     def __init__(self):
         return
@@ -13,8 +14,9 @@ class Easy21Env:
         return np.array([self.drawUnsignedCard(), self.drawUnsignedCard()])
 
     def step(self, state, action):
+        state = copy.copy(state)
         reward = None
-        if action == 'hit':
+        if action == Action.HIT:
             self.playerAction(state)
             reward = self.evaluateLimit(state)
         else:
@@ -53,6 +55,7 @@ class Easy21Env:
         return random.randint(1, 10)
 
     def dealerAction(self, state):
+
         while 1 <= state[0] and state[0] < 17:
             state[0] += self.drawCard()
 
