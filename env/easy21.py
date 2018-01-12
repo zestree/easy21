@@ -1,6 +1,5 @@
 import random
-import numpy as np
-import copy
+
 from actions import Action
 
 class Easy21Env:
@@ -14,7 +13,7 @@ class Easy21Env:
         return tuple([self.drawUnsignedCard(), self.drawUnsignedCard()])
 
     def step(self, state, action):
-        reward = None
+
         if action == Action.HIT:
             state = self.playerAction(state)
             reward = self.evaluateLimit(state)
@@ -22,7 +21,8 @@ class Easy21Env:
             state = self.dealerAction(state)
             reward = self.evaluateTerminalReward(state)
 
-        return state, reward
+        done = reward != None
+        return state, reward, done
 
     def evaluateLimit(self, state):
         dealerPoints = state[0]
