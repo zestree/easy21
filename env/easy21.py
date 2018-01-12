@@ -11,16 +11,15 @@ class Easy21Env:
 
     def getInitState(self):
         ''' state = [dealerPoints, playPoints] '''
-        return np.array([self.drawUnsignedCard(), self.drawUnsignedCard()])
+        return tuple([self.drawUnsignedCard(), self.drawUnsignedCard()])
 
     def step(self, state, action):
-        state = copy.copy(state)
         reward = None
         if action == Action.HIT:
-            self.playerAction(state)
+            state = self.playerAction(state)
             reward = self.evaluateLimit(state)
         else:
-            self.dealerAction(state)
+            state = self.dealerAction(state)
             reward = self.evaluateTerminalReward(state)
 
         return state, reward
@@ -55,9 +54,10 @@ class Easy21Env:
         return random.randint(1, 10)
 
     def dealerAction(self, state):
-
         while 1 <= state[0] and state[0] < 17:
-            state[0] += self.drawCard()
+            state = tuple([state[0] + self.drawCard(), state[1]])
+
+        return state
 
     def playerAction(self, state):
-        state[1] += self.drawCard()
+        return tuple([state[0], state[1] + self.drawCard()])
