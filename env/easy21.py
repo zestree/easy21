@@ -9,24 +9,26 @@ class Easy21Env:
         return
 
     def getInitState(self):
-        ''' state = [dealerPoints, playPoints] '''
-        return tuple([self.drawUnsignedCard(), self.drawUnsignedCard()])
+        # state = [playPoints, dealerPoints]
+        return tuple([self.draw_unsigned_card(), self.draw_unsigned_card()])
 
     def step(self, state, action):
 
         if action == Action.HIT:
-            state = self.playerAction(state)
-            reward = self.evaluateLimit(state)
+            state = self.player_action(state)
+            reward = self.evaluate_limit(state)
         else:
-            state = self.dealerAction(state)
-            reward = self.evaluateTerminalReward(state)
+            state = self.dealer_action(state)
+            reward = self.evaluate_terminal_reward(state)
 
-        done = reward != None
+        done = reward is not None
+        if not done:
+            reward = 0
         return state, reward, done
 
-    def evaluateLimit(self, state):
-        dealerPoints = state[0]
-        playerPoints = state[1]
+    def evaluate_limit(self, state):
+        playerPoints = state[0]
+        dealerPoints = state[1]
 
         reward = None
         if playerPoints < 1 or 21 < playerPoints:
@@ -36,28 +38,28 @@ class Easy21Env:
 
         return reward
 
-    def evaluateTerminalReward(self, state):
-        reward = self.evaluateLimit(state)
-        if reward != None:
+    def evaluate_terminal_reward(self, state):
+        reward = self.evaluate_limit(state)
+        if reward is not None:
             return reward
 
         if state[0] == state[1]:
             return 0
-        return 1 if state[0] < state[1] else -1
+        return 1 if state[1] < state[0] else -1
 
 
-    def drawCard(self):
+    def draw_card(self):
         sign = -1 if random.randint(1,3) == 1 else 1
-        return sign * self.drawUnsignedCard()
+        return sign * self.draw_unsigned_card()
 
-    def drawUnsignedCard(self):
+    def draw_unsigned_card(self):
         return random.randint(1, 10)
 
-    def dealerAction(self, state):
-        while 1 <= state[0] and state[0] < 17:
-            state = tuple([state[0] + self.drawCard(), state[1]])
+    def dealer_action(self, state):
+        while 1 <= state[1] and state[1] < 17:
+            state = tuple([state[0], state[1] + self.draw_card()])
 
         return state
 
-    def playerAction(self, state):
-        return tuple([state[0], state[1] + self.drawCard()])
+    def player_action(self, state):
+        return tuple([state[0] + self.draw_card(), state[1]])

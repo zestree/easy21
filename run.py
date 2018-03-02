@@ -11,6 +11,8 @@ if _PATH_ not in sys.path:
 
 if __name__ == "__main__":
     env = Easy21Env()
-    Q, policy = agent.mc_control_epsilon_greedy(env, 500000)
+#    Q, policy = agent.mc_control_epsilon_greedy(env, 50000)
+#    Q, policy = agent.td_control(env, 50000)
+    Q, N_sa = agent.sarsa(env, 10000, 0.5)
 
     plotter.plot(Q)
