@@ -56,7 +56,7 @@ class Easy21Env:
         return random.randint(1, 10)
 
     def dealer_action(self, state):
-        while 1 <= state[1] and state[1] < 17:
+        while 1 <= state[1] < 17:
             state = tuple([state[0], state[1] + self.draw_card()])
 
         return state

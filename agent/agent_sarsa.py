@@ -20,7 +20,7 @@ class AgentSarsa(Agent):
             print episode
             for step_id, value in enumerate(episode):
 
-                step_size, delta = self.compute_vars(episode, step_id, Q, N_sa, discount_factor)
+                delta_step_size, delta = self.compute_vars(episode, step_id, Q, N_sa, discount_factor)
 
                 for i in range(0, step_id + 1):
                     state = episode[i][0]
@@ -30,7 +30,7 @@ class AgentSarsa(Agent):
                     if i == step_id:
                         eligibility_trace[state][action] = 1
 
-                    Q[state][action] += step_size * delta * eligibility_trace[state][action]
+                    Q[state][action] += delta_step_size * delta * eligibility_trace[state][action]
 
         return Q, N_sa
 
@@ -55,7 +55,7 @@ class AgentSarsa(Agent):
         action = step[1]
         reward = step[2]
         N_sa[state][action] += 1
-        step_size = 1 / N_sa[state][action]
+        delta_step_size = 1 / N_sa[state][action]
 
         next_Q = 0
         if step_id < len(episode) - 1:
@@ -66,4 +66,4 @@ class AgentSarsa(Agent):
 
         delta = reward + discount_factor * next_Q - Q[state][action]
 
-        return step_size, delta
+        return delta_step_size, delta
