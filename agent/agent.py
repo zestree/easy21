@@ -3,41 +3,33 @@ import numpy as np
 from env.actions import Action
 
 
-def mc_control_epsilon_greedy(env, num_episodes, discount_factor=1.0):
+class Agent:
 
-    N_s = defaultdict(float)
-    N_sa = get_defaultdict_state_action(env.action_spaces)
-    Q = get_defaultdict_state_action(env.action_spaces)
-    N0 = 100
-    policy = None
+    def __init__(self, env):
+        self.env = env
+        return
 
-    for episode_idx in range(1, num_episodes):
-        state = env.getInitState()
-        epsilon = N0 / (N0 + N_s[state])
+    @staticmethod
+    def choose_action(policy, state):
+        prob = policy(state)
+        return np.random.choice(np.arange(len(prob)), p=prob)
 
-        policy = make_epsilon_greedy_policy(Q, epsilon, env.action_spaces)
+    @staticmethod
+    def make_epsilon_greedy_policy(Q, epsilon, nA):
+        def policy_fn(state):
+            if np.max(Q[state]) == np.min(Q[state]):
+                return np.ones(nA, dtype=float) / nA
 
-        run_mc_step(policy, state, env, Q, N_s, N_sa, discount_factor)
-    return Q, policy
+            best_action = np.argmax(Q[state])
+            prob = np.ones(nA, dtype=float) * epsilon / nA
+            prob[best_action] += (1 - epsilon)
+            return prob
 
+        return policy_fn
 
-def run_mc_step(policy, state, env, Q, N_s, N_sa, discount_factor):
-
-    selected_action_id = choose_action(policy, state)
-    new_state, reward, done = env.step(state, Action(selected_action_id))
-
-    N_s[state] += 1
-    N_sa[state][selected_action_id] += 1
-
-    if not done:
-        new_state, reward = run_mc_step(policy, new_state, env, Q, N_s, N_sa, discount_factor)
-
-    # incremental update
-    error = reward - Q[state][selected_action_id]
-    step_size = 1 / N_sa[state][selected_action_id]
-    Q[state][selected_action_id] += (step_size * error)
-
-    return new_state, reward * discount_factor
+    @staticmethod
+    def get_defaultdict_state_action(action_spaces):
+        return defaultdict(lambda: np.zeros(action_spaces))
 
 
 def td_control(env, num_episodes, discount_factor=1.0):
