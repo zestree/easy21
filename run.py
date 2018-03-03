@@ -17,7 +17,10 @@ if __name__ == "__main__":
     # agent = AgentMC(env)
     # Q, N_sa = agent.run_episodes(50000)
 
-    agent = AgentSarsa(env)
-    Q, N_sa = agent.run_episodes(50000, 0.5)
+#    agent = AgentSarsa(env)
+#    Q, N_sa = agent.run_episodes(50000, 0.5)
 
-    plotter.plot(Q)
+#    plotter.plot(Q)
+
+    features = env.get_features((4,4), 0)
+    print features
