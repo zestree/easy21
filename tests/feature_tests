@@ -1,25 +1,26 @@
+import numpy as np
+import unittest
 import sys
 sys.path.append('..')
-
-import unittest
 from env.easy21 import Easy21Env
 from env.actions import Action
-import numpy as np
+from estimator import Estimator
+
 
 
 class TestFeatures(unittest.TestCase):
     def setUp(self):
-        self.env = Easy21Env()
+        self.estimator = Estimator(Easy21Env())
 
     def test_1_1_hit(self):
-        features = self.env.get_features((1, 1), Action.HIT.value)
+        features = self.estimator.featurize_sa((1, 1), Action.HIT.value)
 
         expected = np.zeros(36)
         expected[0] = 1
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_4_1_hit(self):
-        features = self.env.get_features((4, 1), Action.HIT.value)
+        features = self.estimator.featurize_sa((4, 1), Action.HIT.value)
 
         expected = np.zeros(36)
         expected[0] = 1
@@ -27,7 +28,7 @@ class TestFeatures(unittest.TestCase):
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_4_4_hit(self):
-        features = self.env.get_features((4, 4), Action.HIT.value)
+        features = self.estimator.featurize_sa((4, 4), Action.HIT.value)
         expected = np.zeros(36)
         expected[0] = 1
         expected[1] = 1
@@ -36,7 +37,7 @@ class TestFeatures(unittest.TestCase):
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_16_7_hit(self):
-        features = self.env.get_features((16, 7), Action.HIT.value)
+        features = self.estimator.featurize_sa((16, 7), Action.HIT.value)
 
         expected = np.zeros(36)
         expected[10] = 1
@@ -46,21 +47,21 @@ class TestFeatures(unittest.TestCase):
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_21_10_hit(self):
-        features = self.env.get_features((21, 10), Action.HIT.value)
+        features = self.estimator.featurize_sa((21, 10), Action.HIT.value)
 
         expected = np.zeros(36)
         expected[17] = 1
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_1_1_stick(self):
-        features = self.env.get_features((1, 1), Action.STICK.value)
+        features = self.estimator.featurize_sa((1, 1), Action.STICK.value)
 
         expected = np.zeros(36)
         expected[18] = 1
         self.assertSequenceEqual(features.tolist(), expected.tolist())
 
     def test_21_10_stick(self):
-        features = self.env.get_features((21, 10), Action.STICK.value)
+        features = self.estimator.featurize_sa((21, 10), Action.STICK.value)
 
         expected = np.zeros(36)
         expected[35] = 1

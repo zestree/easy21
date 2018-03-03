@@ -5,7 +5,7 @@ class Agent:
 
     def __init__(self, env):
         self.env = env
-        return
+        pass
 
     @staticmethod
     def choose_action(policy, state):
