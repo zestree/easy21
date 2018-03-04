@@ -20,8 +20,9 @@ class AgentSarsa(Agent):
             print episode
             for step_id, value in enumerate(episode):
 
-                delta_step_size, delta = self.compute_vars(episode, step_id, Q, N_sa, discount_factor)
+                delta_step_size, delta = self.compute_delta(episode, step_id, Q, N_sa, discount_factor)
 
+                # for every step leading to current step in this episode, decay eligibility trace
                 for i in range(0, step_id + 1):
                     state = episode[i][0]
                     action = episode[i][1]
@@ -49,7 +50,7 @@ class AgentSarsa(Agent):
         return reward
 
     @staticmethod
-    def compute_vars(episode, step_id, Q, N_sa, discount_factor):
+    def compute_delta(episode, step_id, Q, N_sa, discount_factor):
         step = episode[step_id]
         state = step[0]
         action = step[1]
@@ -64,6 +65,8 @@ class AgentSarsa(Agent):
             next_action = next_step[1]
             next_Q = Q[next_state][next_action]
 
+        # when step_id == last step in episode, next_Q is 0, future reward is 0
+        # delta is the difference between immediate reward and current Q_sa
         delta = reward + discount_factor * next_Q - Q[state][action]
 
         return delta_step_size, delta

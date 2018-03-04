@@ -43,3 +43,9 @@ class Estimator:
     def predict(self, state):
         features = self.featurize_state(state)
         return np.dot(features, self.weight)
+
+    def predict_sa(self, state, action):
+        return np.dot(self.featurize_sa(state, action), self.weight)
+
+    def update_weight(self, weight_delta):
+        self.weight += weight_delta

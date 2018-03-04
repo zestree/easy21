@@ -11,47 +11,50 @@ class AgentSarsaFa(Agent):
 
     def run_episodes(self, num_episodes, var_lambda=0, discount_factor=1.0):
 
-        Q = self.get_defaultdict_state_action(self.env.action_spaces)
         epsilon = 0.05
         delta_step_size = 0.01
 
         for episode_idx in range(1, num_episodes):
             init_state = self.env.getInitState()
+            estimator = self.estimator
 
             episode = []
-            eligibility_trace = self.get_defaultdict_state_action(self.env.action_spaces)
-            self.run_sarsa(self.estimator, episode, init_state, epsilon)
+            eligibility_trace = np.zeros(36)
+            policy = self.make_policy(estimator, epsilon, self.env.action_spaces)
+            self.run_sarsa(estimator, episode, policy, init_state, epsilon)
 
             print episode
             for step_id, value in enumerate(episode):
 
-                delta = self.compute_vars(episode, step_id, Q, discount_factor)
+                delta = self.compute_delta(estimator, episode, step_id, discount_factor)
 
                 for i in range(0, step_id + 1):
                     state = episode[i][0]
                     action = episode[i][1]
-                    eligibility_trace[state][action] = discount_factor * var_lambda * eligibility_trace[state][action]
+
+                    eligibility_trace = discount_factor * var_lambda * eligibility_trace
 
                     if i == step_id:
-                        eligibility_trace[state][action] = 1
+                        x = estimator.featurize_sa(state, action)
+                        eligibility_trace += x
 
-                    Q[state][action] += delta_step_size * delta * eligibility_trace[state][action]
+                dw = delta_step_size * delta * eligibility_trace
+                estimator.update_weight(dw)
+        return self.compute_Q()
 
-        return Q
+    def run_sarsa(self, estimator, episode, policy, state, epsilon):
 
-    def run_sarsa(self, estimator, episode, state, epsilon):
-
-        policy = self.make_policy(estimator, epsilon, self.env.action_spaces)
         selected_action_id = self.choose_action(policy, state)
 
         new_state, reward, done = self.env.step(state, Action(selected_action_id))
         episode.append((state, selected_action_id, reward))
 
         if not done:
-            self.run_sarsa(estimator, episode, new_state, epsilon)
+            self.run_sarsa(estimator, episode, policy, new_state, epsilon)
 
-    @staticmethod
-    def make_policy(estimator, epsilon, action_spaces):
+        return
+
+    def make_policy(self, estimator, epsilon, action_spaces):
         def policy_fn(state):
             q_sa = estimator.predict(state)
             if np.max(q_sa) == np.min(q_sa):
@@ -63,20 +66,27 @@ class AgentSarsaFa(Agent):
             return prob
         return policy_fn
 
-    @staticmethod
-    def compute_vars(episode, step_id, Q, discount_factor):
+    def compute_delta(self, estimator, episode, step_id, discount_factor):
         step = episode[step_id]
         state = step[0]
         action = step[1]
         reward = step[2]
 
-        next_Q = 0
+        next_q_sa = 0
         if step_id < len(episode) - 1:
             next_step = episode[step_id + 1]
             next_state = next_step[0]
             next_action = next_step[1]
-            next_Q = Q[next_state][next_action]
+            next_q_sa = estimator.predict_sa(next_state, next_action)
 
-        delta = reward + discount_factor * next_Q - Q[state][action]
-
+        delta = reward + discount_factor * next_q_sa - estimator.predict_sa(state, action)
         return delta
+
+    def compute_Q(self):
+        Q = self.get_defaultdict_state_action(self.env.action_spaces)
+
+        for i in range(1,21):
+            for j in range(1,10):
+                Q[(i,j)] = self.estimator.predict((i,j))
+        return Q
+
